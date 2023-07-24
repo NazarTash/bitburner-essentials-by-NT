@@ -1,9 +1,8 @@
 /**
  * Uses a hard-coded list of servers and attempts to feed the
- * hack-template script to them. Mainly Used for updating the hacking
- * script on all available servers.
+ * hack-template script to them.
  *
- * If after augmentation, run after acquiring all port-openers.
+ * Run after acquiring all port-openers.
  *
  *
  * @param {NS} ns */
@@ -18,6 +17,13 @@ export async function main(ns) {
     "unitalife", "solaris", "lexo-corp"];
 
   let i = 0;
+  let file = "hack-template.js";
+
+  // List of targets
+  const target1 = "iron-gym";
+  const target2 = "joesguns";
+  const target3 = "harakiri-sushi";
+
   for (i in servers) {
     // Open ports if needed
     ns.brutessh(servers[i]);
@@ -31,12 +37,27 @@ export async function main(ns) {
     ns.killall(servers[i]);
 
     // Use up all available memory for hacking script
-    ns.scp("hack-template.js", servers[i]);
+    ns.scp(file, servers[i]);
+    var threads = 3;
+
+
     if (ns.getServerMaxRam(servers[i]) < 8) {
-      ns.exec("hack-template.js", servers[i], 1);
+      threads = 1;
     }
     else {
-      ns.exec("hack-template.js", servers[i], (ns.getServerMaxRam(servers[i]) / 8) * 3);
+      threads = ns.getServerMaxRam(servers[i]) / 8 * 3;
+    }
+
+
+    // Switch targets
+    if (i < 8) {
+      ns.exec(file, servers[i], threads, target2);
+    }
+    else if (i > 7 && i < 18) {
+      ns.exec(file, servers[i], threads, target3);
+    }
+    else {
+      ns.exec(file, servers[i], threads, target1);
     }
   }
 }
